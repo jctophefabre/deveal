@@ -1,0 +1,7 @@
+
+reveal_path : "https://cdn.jsdelivr.net/npm/reveal.js@3.6.0"
+reveal_theme : "black"
+
+custom_css : "deveal.css"
+
+content_files : ["sections/title.html","sections/part1.html","sections/part2.html"]
