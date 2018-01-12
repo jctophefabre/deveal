@@ -1,8 +1,13 @@
 from setuptools import setup
 
+def readme():
+    with open('README.rst') as f:
+        return f.read()
+
 setup(name = 'deveal',
-      version = '0.0.3',
-      description = '',
+      version = '0.0.4',
+      description = 'A reveal.js helper tool',
+      long_description=readme(),
       author='Jean-Christophe Fabre',
       author_email='jean-christophe.fabre@inra.fr',
       url='http://github.com/fabrejc/deveal',
