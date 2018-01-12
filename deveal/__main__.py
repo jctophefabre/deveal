@@ -81,7 +81,7 @@ class Deveal(FileSystemEventHandler):
 
   def on_any_event(self, event):
     if event.src_path != os.path.join(os.getcwd(),"index.html"):
-      print("%s is %s" % (event.src_path,event.event_type))
+      print("%s is %s" % (os.path.relpath(event.src_path),event.event_type))
       self.runBuild(dict())
 
 
@@ -98,6 +98,7 @@ class Deveal(FileSystemEventHandler):
       while True:
         time.sleep(1)
     except KeyboardInterrupt:
+      print ""
       print("Interrupted by keyboard...")
       Obs.stop()
 
