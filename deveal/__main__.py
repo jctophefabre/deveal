@@ -45,7 +45,7 @@ class Deveal(FileSystemEventHandler):
       try:
         Vars = yaml.load(YAMLFile)
       except yaml.YAMLError as E:
-        print(exc)
+        print(E)
 
     return Vars
 
@@ -59,6 +59,8 @@ class Deveal(FileSystemEventHandler):
     shutil.copytree(SkeletonDir,DestDir)
     print("Done")
 
+    return 0
+
 
 ##############################################################################
 
@@ -66,14 +68,20 @@ class Deveal(FileSystemEventHandler):
   def runBuild(self,Args):
     Vars = self.__buildVars()
 
-    TplFilename = "deveal-index.html"
-    GeneratedContent = jinja2.Environment(loader=jinja2.FileSystemLoader(os.getcwd())).get_template(TplFilename).render(**Vars)
+    try:
+      TplFilename = "deveal-index.html"
+      GeneratedContent = jinja2.Environment(loader=jinja2.FileSystemLoader(os.getcwd())).get_template(TplFilename).render(**Vars)
+    except jinja2.TemplateError as E:
+      print("Template error : %s (file %s, line %s)" % (E.message,E.filename,E.lineno))
+      return 127
 
     OutFile = open(os.path.join(os.getcwd(),"index.html"),"w")
     OutFile.write(GeneratedContent.encode('utf8'))
     OutFile.close()
 
     print("Build on %s" % time.strftime("%Y-%d-%m %H:%M:%S"))
+
+    return 0
 
 
 ##############################################################################
@@ -105,6 +113,8 @@ class Deveal(FileSystemEventHandler):
     Obs.join()
     print("Done")
 
+    return 0
+
 
 ##############################################################################
 ##############################################################################
@@ -126,8 +136,8 @@ def main():
   Dvl = Deveal()
 
   if Args["command_name"] == "new":
-    Dvl.runNew(Args)
+    return Dvl.runNew(Args)
   elif Args["command_name"] == "build":
-    Dvl.runBuild(Args)
+    return Dvl.runBuild(Args)
   elif Args["command_name"] == "watch":
-    Dvl.runWatch(Args)
+    return Dvl.runWatch(Args)
