@@ -4,7 +4,9 @@
   <head>
     <meta charset="utf-8">
 
+    {% if title %}
     <title>{{ title }}</title>
+    {% endif %}
 
     <meta name="description" content="A framework for easily creating beautiful presentations using HTML">
     <meta name="author" content="Hakim El Hattab">
@@ -16,7 +18,7 @@
 
     <link rel="stylesheet" href="{{ reveal_path }}/css/reveal.css">
     <link rel="stylesheet" href="{{ reveal_path }}/css/theme/{{ reveal_theme }}.css" id="theme">
-    <link rel="stylesheet" href="{{ custom_css }}">
+    {% if custom_css %}<link rel="stylesheet" href="{{ custom_css }}">{% endif %}
 
     <!-- Theme used for syntax highlighting of code -->
     <link rel="stylesheet" href="{{ reveal_path }}/lib/css/zenburn.css">
