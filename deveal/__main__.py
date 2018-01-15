@@ -23,10 +23,14 @@ from watchdog.events import FileSystemEventHandler
 BaseDir = os.path.dirname(os.path.abspath(__file__))
 SkeletonDir = os.path.join(BaseDir,"skeleton")
 
+DefaultConfig = {
+  "reveal_theme" : "black",
+  "reveal_path" : "https://cdn.jsdelivr.net/npm/reveal.js@3.6.0"
+}
+
 
 ##############################################################################
 ##############################################################################
-
 
 
 class Deveal(FileSystemEventHandler):
@@ -38,14 +42,37 @@ class Deveal(FileSystemEventHandler):
 ##############################################################################
 
 
+  def __printError(self,Msg):
+    print("[ERROR] %s" % Msg)
+
+
+##############################################################################
+
+
+  def __printWarning(self,Msg):
+    print("[WARNING] %s" % Msg)
+
+
+##############################################################################
+
+
   def __buildVars(self):
     Vars = dict()
 
-    with open(os.path.join(os.getcwd(),"deveal.yaml"), 'r') as YAMLFile:
-      try:
-        Vars = yaml.load(YAMLFile)
-      except yaml.YAMLError as E:
-        print(E)
+    if not os.path.isfile("deveal.yaml"):
+      self.__printWarning("File deveal.yaml not found")
+    else:
+      with open(os.path.join(os.getcwd(),"deveal.yaml"), 'r') as YAMLFile:
+        try:
+          Vars = yaml.load(YAMLFile)
+        except yaml.YAMLError as E:
+          Mark = E.problem_mark
+          self.__printWarning("Problem reading deveal.yaml file at line %s, column %s. Config file ignored." % (Mark.line+1,Mark.column+1))
+
+    for Key, Value in DefaultConfig.iteritems():
+      if Key not in Vars:
+        Vars[Key] = Value
+        self.__printWarning("Missing parameter %s in configuration, using defaullt value \"%s\"" % (Key,Value))
 
     return Vars
 
@@ -72,7 +99,7 @@ class Deveal(FileSystemEventHandler):
       TplFilename = "deveal-index.html"
       GeneratedContent = jinja2.Environment(loader=jinja2.FileSystemLoader(os.getcwd())).get_template(TplFilename).render(**Vars)
     except jinja2.TemplateError as E:
-      print("Template error : %s (file %s, line %s)" % (E.message,E.filename,E.lineno))
+      self.__printError("Template problem : %s (file %s, line %s)" % (E.message,E.filename,E.lineno))
       return 127
 
     OutFile = open(os.path.join(os.getcwd(),"index.html"),"w")
