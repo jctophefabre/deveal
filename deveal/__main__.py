@@ -1,10 +1,11 @@
+from __future__ import unicode_literals
+
 __license__ = "GPLv3"
 __author__ = "Jean-Christophe Fabre <jean-christophe.fabre@inra.fr>"
 
 
 ##############################################################################
 ##############################################################################
-
 
 import os
 import jinja2
@@ -69,7 +70,7 @@ class Deveal(FileSystemEventHandler):
           Mark = E.problem_mark
           self.__printWarning("Problem reading deveal.yaml file at line %s, column %s. Config file ignored." % (Mark.line+1,Mark.column+1))
 
-    for Key, Value in DefaultConfig.iteritems():
+    for (Key, Value) in DefaultConfig.items():
       if Key not in Vars:
         Vars[Key] = Value
         self.__printWarning("Missing parameter %s in configuration, using defaullt value \"%s\"" % (Key,Value))
@@ -103,7 +104,7 @@ class Deveal(FileSystemEventHandler):
       return 127
 
     OutFile = open(os.path.join(os.getcwd(),"index.html"),"w")
-    OutFile.write(GeneratedContent.encode('utf8'))
+    OutFile.write(GeneratedContent)
     OutFile.close()
 
     print("Build on %s" % time.strftime("%Y-%d-%m %H:%M:%S"))
@@ -133,7 +134,7 @@ class Deveal(FileSystemEventHandler):
       while True:
         time.sleep(1)
     except KeyboardInterrupt:
-      print ""
+      print("")
       print("Interrupted by keyboard...")
       Obs.stop()
 
