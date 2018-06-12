@@ -5,7 +5,7 @@ def readme():
         return f.read()
 
 setup(name = 'deveal',
-      version = '0.2.1',
+      version = '0.2.2',
       description = 'A reveal.js helper tool',
       long_description=readme(),
       author='Jean-Christophe Fabre',

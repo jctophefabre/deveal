@@ -18,7 +18,15 @@
 
     <link rel="stylesheet" href="{{ reveal_path }}/css/reveal.css">
     <link rel="stylesheet" href="{{ reveal_path }}/css/theme/{{ reveal_theme }}.css" id="theme">
-    {% if custom_css %}<link rel="stylesheet" href="{{ custom_css }}">{% endif %}
+    {% if custom_css %}
+    {%- if custom_css is string -%}
+    <link rel="stylesheet" href="{{ custom_css }}">
+    {% else %}
+    {%- for css in custom_css -%}
+    <link rel="stylesheet" href="{{ css }}">
+    {% endfor %}
+    {% endif %}
+    {% endif %}
 
     <!-- Theme used for syntax highlighting of code -->
     <link rel="stylesheet" href="{{ reveal_path }}/lib/css/zenburn.css">
