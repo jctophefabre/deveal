@@ -14,7 +14,7 @@ It provides the ability to
 * watch for presentation updates while editing the source files
 
 
-Deveal is developped in Python and mainly relies on the wonderful
+Deveal is developped in Python 3 and mainly relies on the wonderful
 `Jinja2 <http://jinja.pocoo.org>`_, `PyYaml <https://pyyaml.org/>`_ and `watchdog <https://pypi.python.org/pypi/watchdog>`_ packages.
 
 

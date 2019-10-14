@@ -7,6 +7,17 @@ __author__ = "Jean-Christophe Fabre <jean-christophe.fabre@inra.fr>"
 ##############################################################################
 ##############################################################################
 
+
+import sys
+
+
+if sys.version_info[0] < 3:
+    raise Exception("Python 3 or a more recent version is required.")
+
+
+##############################################################################
+##############################################################################
+
 import os
 import jinja2
 import argparse
@@ -65,7 +76,7 @@ class Deveal(FileSystemEventHandler):
     else:
       with open(os.path.join(os.getcwd(),"deveal.yaml"), 'r') as YAMLFile:
         try:
-          Vars = yaml.load(YAMLFile)
+          Vars = yaml.load(YAMLFile,Loader=yaml.FullLoader)
         except yaml.YAMLError as E:
           Mark = E.problem_mark
           self.__printWarning("Problem reading deveal.yaml file at line %s, column %s. Config file ignored." % (Mark.line+1,Mark.column+1))
