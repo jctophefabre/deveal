@@ -18,12 +18,14 @@ if sys.version_info[0] < 3:
 ##############################################################################
 ##############################################################################
 
+
 import os
-import jinja2
 import argparse
 import shutil
-import yaml
 import time
+import subprocess
+import yaml
+import jinja2
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
@@ -39,6 +41,8 @@ DefaultConfig = {
   "reveal_theme" : "black",
   "reveal_path" : "https://cdn.jsdelivr.net/npm/reveal.js@3.6.0"
 }
+
+RevealCloneDir = 'reveal.js'
 
 
 ##############################################################################
@@ -97,6 +101,57 @@ class Deveal(FileSystemEventHandler):
     print("Creating new slideshow in %s..." % DestDir)
     shutil.copytree(SkeletonDir,DestDir)
     print("Done")
+
+    if "with_reveal" in Args:
+      self.runReveal(Args)
+      yamlfile_path = os.path.join(DestDir,'deveal.yaml')
+      with open(yamlfile_path) as yamlfile:
+        vars = yaml.load(yamlfile,Loader=yaml.FullLoader)
+
+      vars['reveal_path'] = RevealCloneDir
+
+      with open(yamlfile_path,'w') as yamlfile:
+        yaml.dump(vars, yamlfile)
+
+    return 0
+
+
+##############################################################################
+
+
+  def runReveal(self,Args):
+    work_path = os.getcwd()
+    if 'path' in Args:
+      work_path = Args['path']
+
+    if not os.path.isdir(work_path):
+      print("Directory {} not found".format(work_path))
+      return 127
+
+    try:
+      P = subprocess.run(["git", "--version"],check=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    except:
+      print("Git not found")
+      return 127
+
+    is_git_workdir = True
+    try:
+      P = subprocess.run(["git", "status"],cwd=work_path,check=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    except:
+      is_git_workdir = False
+
+    if is_git_workdir:
+      print("Adding reveal.js as git submodule")
+      try:
+        P = subprocess.run(['git','submodule','add','https://github.com/hakimel/reveal.js.git',RevealCloneDir],cwd=work_path)
+      except:
+        pass
+    else:
+      print("Cloning reveal.js in subdirectory")
+      try:
+        P = subprocess.run(['git','clone','https://github.com/hakimel/reveal.js.git',RevealCloneDir],cwd=work_path)
+      except:
+        pass
 
     return 0
 
@@ -165,10 +220,13 @@ def main():
 
   SubParsers = Parser.add_subparsers(dest="command_name")
 
-  ParserNew = SubParsers.add_parser("new",help="create new reveal.js slideshow")
+  ParserNew = SubParsers.add_parser("new",help="create new reveal.js slideshow")  
   ParserNew.add_argument("path",type=str)
+  ParserNew.add_argument("--with-reveal",action="store_true",
+                         help="donwloads the reveal repository in a subdirectory (requires git)")
   ParserBuild = SubParsers.add_parser("build",help="build reveal.js slideshow")
   ParserWatch = SubParsers.add_parser("watch",help="watch for changes and build reveal.js slideshow")
+  ParserWatch = SubParsers.add_parser("reveal",help="donwloads the reveal repository in a subdirectory (requires git)")
 
   Args = vars(Parser.parse_args())
 
@@ -176,7 +234,10 @@ def main():
 
   if Args["command_name"] == "new":
     return Dvl.runNew(Args)
+  elif Args["command_name"] == "reveal":
+    return Dvl.runReveal(Args)
   elif Args["command_name"] == "build":
     return Dvl.runBuild(Args)
   elif Args["command_name"] == "watch":
     return Dvl.runWatch(Args)
+  
