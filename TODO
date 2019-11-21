@@ -1,3 +1,4 @@
 TODO Add better handling of template exceptions
 TODO Refactor source code to match PEP8 recommendations
 TODO Add integrated tests
+TODO Add deployment process in README.md file
