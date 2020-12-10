@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 
 __license__ = "GPLv3"
-__author__ = "Jean-Christophe Fabre <jean-christophe.fabre@inra.fr>"
+__author__ = "Jean-Christophe Fabre <jctophe.fabre@gmail.com>"
 
 
 ##############################################################################

@@ -5,12 +5,12 @@ def readme():
         return f.read()
 
 setup(name = 'deveal',
-      version = '1.0.1',
+      version = '1.0.2',
       description = 'A reveal.js helper tool',
       long_description=readme(),
       author='Jean-Christophe Fabre',
-      author_email='jean-christophe.fabre@inra.fr',
-      url='http://github.com/fabrejc/deveal',
+      author_email='jctophe.fabre@gmail.com',
+      url='https://github.com/jctophefabre/deveal',
       license='GPLv3',
       packages = ['deveal'],
       package_data={
@@ -26,7 +26,8 @@ setup(name = 'deveal',
           'argparse',
           'jinja2 >= 2.7',
           'PyYAML',
-          'watchdog'
+          'watchdog',
+          'livereload'
       ],
       python_requires='~=3.5',
      )
