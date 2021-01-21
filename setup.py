@@ -4,8 +4,14 @@ def readme():
     with open('README.rst') as f:
         return f.read()
 
+def version():
+    about_file = "deveal/about.py"
+    with open(about_file) as f:
+        exec(compile(f.read(), about_file, "exec"))
+    return locals()["__version__"]
+
 setup(name = 'deveal',
-      version = '1.1.0',
+      version = version(),
       description = 'A reveal.js helper tool',
       long_description=readme(),
       author='Jean-Christophe Fabre',

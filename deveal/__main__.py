@@ -29,6 +29,8 @@ import jinja2
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
+from .about import __version__
+
 
 ##############################################################################
 ##############################################################################
@@ -164,8 +166,12 @@ class Deveal(FileSystemEventHandler):
 
     try:
       TplFilename = "deveal-index.html"
+      print(os.getcwd())
+      print(BaseDir,SkeletonDir)
       GeneratedContent = jinja2.Environment(loader=jinja2.FileSystemLoader(os.getcwd())).get_template(TplFilename).render(**Vars)
     except jinja2.TemplateError as E:
+      print("message",E.message)
+      print("filename",E.filename)
       self.__printError("Template problem : %s (file %s, line %s)" % (E.message,E.filename,E.lineno))
       return 127
 
@@ -226,7 +232,8 @@ def main():
                          help="donwloads the reveal repository in a subdirectory (requires git)")
   ParserBuild = SubParsers.add_parser("build",help="build reveal.js slideshow")
   ParserWatch = SubParsers.add_parser("watch",help="watch for changes and build reveal.js slideshow")
-  ParserWatch = SubParsers.add_parser("reveal",help="donwloads the reveal repository in a subdirectory (requires git)")
+  ParserReveal = SubParsers.add_parser("reveal",help="donwload the reveal repository in a subdirectory (requires git)")
+  ParserVersion = SubParsers.add_parser("version",help="show deveal version")
 
   Args = vars(Parser.parse_args())
 
@@ -240,4 +247,5 @@ def main():
     return Dvl.runBuild(Args)
   elif Args["command_name"] == "watch":
     return Dvl.runWatch(Args)
-  
+  elif Args["command_name"] == "version":
+    print(__version__)
