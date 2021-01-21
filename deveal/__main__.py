@@ -166,12 +166,8 @@ class Deveal(FileSystemEventHandler):
 
     try:
       TplFilename = "deveal-index.html"
-      print(os.getcwd())
-      print(BaseDir,SkeletonDir)
       GeneratedContent = jinja2.Environment(loader=jinja2.FileSystemLoader(os.getcwd())).get_template(TplFilename).render(**Vars)
     except jinja2.TemplateError as E:
-      print("message",E.message)
-      print("filename",E.filename)
       self.__printError("Template problem : %s (file %s, line %s)" % (E.message,E.filename,E.lineno))
       return 127
 
