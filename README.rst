@@ -49,11 +49,11 @@ deveal new
 The ``deveal new`` command creates a new presentation.
 As it creates the presentation directory itself, the command must be run in the upper directory where the new presentation will be created
 
-(example below for creating a new presentation named "mynewpresent")
+(example below for creating a new presentation named "mynewslideshow")
 
 .. code-block:: shell
 
-    deveal new mynewpresent
+    deveal new mynewslideshow
 
 
 This command creates the minimal required files in the presentation directory
@@ -112,4 +112,4 @@ Tips
 Authors
 =======
 
-Deveal is developed by `Jean-Christophe Fabre <https://github.com/fabrejc>`_
+Deveal is developed by `Jean-Christophe Fabre <https://github.com/jctophefabre>`_

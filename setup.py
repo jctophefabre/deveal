@@ -20,9 +20,8 @@ setup(name = 'deveal',
       license='GPLv3',
       packages = ['deveal'],
       package_data={
-          'deveal': ['skeleton/*']
+          'deveal': ['skeleton/*','skeleton/sections/*']
       },
-      include_package_data=True,
       entry_points = {
           'console_scripts': [
               'deveal = deveal.__main__:main'
