@@ -39,7 +39,7 @@ SkeletonDir = os.path.join(BaseDir,"skeleton")
 
 DefaultConfig = {
   "reveal_theme" : "black",
-  "reveal_path" : "https://cdn.jsdelivr.net/npm/reveal.js@3.6.0"
+  "reveal_path" : "https://cdn.jsdelivr.net/npm/reveal.js@4.1.0"
 }
 
 RevealCloneDir = 'reveal.js'

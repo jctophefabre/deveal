@@ -16,8 +16,9 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-    <link rel="stylesheet" href="{{ reveal_path }}/css/reveal.css">
-    <link rel="stylesheet" href="{{ reveal_path }}/css/theme/{{ reveal_theme }}.css" id="theme">
+    <link rel="stylesheet" href="{{ reveal_path }}/dist/reset.css">
+    <link rel="stylesheet" href="{{ reveal_path }}/dist/reveal.css">
+    <link rel="stylesheet" href="{{ reveal_path }}/dist/theme/{{ reveal_theme }}.css" id="theme">
     {% if custom_css %}
     {%- if custom_css is string -%}
     <link rel="stylesheet" href="{{ custom_css }}">
@@ -29,20 +30,8 @@
     {% endif %}
 
     <!-- Theme used for syntax highlighting of code -->
-    <link rel="stylesheet" href="{{ reveal_path }}/lib/css/zenburn.css">
+    <link rel="stylesheet" href="{{ reveal_path }}/plugin/highlight/zenburn.css">
 
-    <!-- Printing and PDF exports -->
-    <script>
-      var link = document.createElement( 'link' );
-      link.rel = 'stylesheet';
-      link.type = 'text/css';
-      link.href = window.location.search.match( /print-pdf/gi ) ? '{{ reveal_path }}/css/print/pdf.css' : '{{ reveal_path }}/css/print/paper.css';
-      document.getElementsByTagName( 'head' )[0].appendChild( link );
-    </script>
-
-    <!--[if lt IE 9]>
-    <script src="lib/js/html5shiv.js"></script>
-    <![endif]-->
   </head>
 
   <body>
@@ -61,12 +50,13 @@
 
     </div>
 
-    <script src="{{ reveal_path }}/lib/js/head.min.js"></script>
-    <script src="{{ reveal_path }}/js/reveal.js"></script>
+    <script src="{{ reveal_path }}/dist/reveal.js"></script>
+    <script src="{{ reveal_path }}/plugin/notes/notes.js"></script>
+		<script src="{{ reveal_path }}/plugin/highlight/highlight.js"></script>
 
     <script>
 
-      // More info https://github.com/hakimel/reveal.js#configuration
+      // More info https://revealjs.com/ > Customization > Config Options 
       Reveal.initialize({
         controls: true,
         progress: true,
@@ -77,16 +67,7 @@
 
         transition: 'slide', // none/fade/slide/convex/concave/zoom
 
-        // More info https://github.com/hakimel/reveal.js#dependencies
-        dependencies: [
-          { src: '{{ reveal_path }}/lib/js/classList.js', condition: function() { return !document.body.classList; } },
-          { src: '{{ reveal_path }}/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-          { src: '{{ reveal_path }}/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-          { src: '{{ reveal_path }}/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
-          { src: '{{ reveal_path }}/plugin/search/search.js', async: true },
-          { src: '{{ reveal_path }}/plugin/zoom-js/zoom.js', async: true },
-          { src: '{{ reveal_path }}/plugin/notes/notes.js', async: true }
-        ]
+        plugins: [RevealHighlight, RevealNotes]
       });
 
     </script>
