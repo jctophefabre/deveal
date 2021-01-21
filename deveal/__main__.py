@@ -102,7 +102,7 @@ class Deveal(FileSystemEventHandler):
     shutil.copytree(SkeletonDir,DestDir)
     print("Done")
 
-    if "with_reveal" in Args:
+    if "with_reveal" in Args and Args["with_reveal"]:
       self.runReveal(Args)
       yamlfile_path = os.path.join(DestDir,'deveal.yaml')
       with open(yamlfile_path) as yamlfile:
