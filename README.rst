@@ -69,13 +69,13 @@ Unless you want to modify the reveal.js configuration, you should not have to mo
 
 The deveal.yaml file contains the configuration for the presentation. It should contains the folling expected variables:
 
-* reveal_path : The path or URL to the installed reveal.js framework ("https://cdn.jsdelivr.net/npm/reveal.js@3.6.0" if not defined)
-* reveal_theme : The theme to use for ("black" if not defined)
+* reveal_path : The path or URL to the installed reveal.js framework (default is "https://cdn.jsdelivr.net/npm/reveal.js@4.1.0")
+* reveal_theme : The theme to use for (default is "black")
 * content_files : The ordered array of files containing the parts of the presentation
-* custom_css : The path to the custom css file if any
+* custom_css : The path to custom css files if any
 
-Any other variable defined in this file is made available as a Jinja2 variable for the template file.
-This may be useful if you plan to customize the template.
+Any other variable defined in this file is made available as a variable for the template file.
+This may be useful to customize the base template.
 
 
 
