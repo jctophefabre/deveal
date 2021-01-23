@@ -154,8 +154,14 @@ class Deveal(FileSystemEventHandler):
             generated_content = jinja2.Environment(
                                     loader=jinja2.FileSystemLoader(os.getcwd())
                                 ).get_template(tpl_filename).render(**vars)
-        except jinja2.TemplateError as e:
+        except jinja2.TemplateSyntaxError as e:
             Deveal.__print_error("Template problem : {} (file {}, line {})".format(e.message, e.filename, e.lineno))
+            return 127
+        except jinja2.TemplateNotFound:
+            Deveal.__print_error("Template not found")
+            return 127
+        except jinja2.TemplateError:
+            Deveal.__print_error("Unknown template problem")
             return 127
 
         outFile = open(os.path.join(os.getcwd(), "index.html"), "w")
