@@ -4,19 +4,10 @@ __license__ = "GPLv3"
 __author__ = "Jean-Christophe Fabre <jctophe.fabre@gmail.com>"
 
 
-##############################################################################
-##############################################################################
-
-
 import sys
-
 
 if sys.version_info[0] < 3:
     raise Exception("Python 3 or a more recent version is required.")
-
-
-##############################################################################
-##############################################################################
 
 
 import os
@@ -33,215 +24,202 @@ from .about import __version__
 
 
 ##############################################################################
-##############################################################################
 
 
-BaseDir = os.path.dirname(os.path.abspath(__file__))
-SkeletonDir = os.path.join(BaseDir,"skeleton")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+SKELETON_DIR = os.path.join(BASE_DIR, "skeleton")
 
-DefaultConfig = {
-  "reveal_theme" : "black",
-  "reveal_path" : "https://cdn.jsdelivr.net/npm/reveal.js@4.1.0"
+DEFAULT_CONFIG = {
+    "reveal_theme": "black",
+    "reveal_path": "https://cdn.jsdelivr.net/npm/reveal.js@4.1.0"
 }
 
-RevealCloneDir = 'reveal.js'
+REVEAL_CLONE_DIR = 'reveal.js'
 
 
-##############################################################################
 ##############################################################################
 
 
 class Deveal(FileSystemEventHandler):
 
-  def __init__(self):
-    pass
+    def __init__(self):
+        pass
 
+    @staticmethod
+    def __print_error(msg):
+        print("[ERROR] {}".format(msg))
 
-##############################################################################
+    @staticmethod
+    def __print_warning(msg):
+        print("[WARNING] {}".format(msg))
 
+    def __build_vars(self):
+        vars = dict()
 
-  def __printError(self,Msg):
-    print("[ERROR] %s" % Msg)
+        if not os.path.isfile("deveal.yaml"):
+            Deveal.__print_warning("File deveal.yaml not found. Config file ignored.")
+        else:
+            with open(os.path.join(os.getcwd(), "deveal.yaml"), 'r') as yaml_file:
+                try:
+                    vars = yaml.load(yaml_file, Loader=yaml.FullLoader)
+                except yaml.YAMLError as E:
+                    mark = E.problem_mark
+                    Deveal.__print_warning(
+                        "Problem reading deveal.yaml file at line {}, column {}. Config file ignored."
+                        .format(mark.line+1, mark.column+1)
+                    )
 
+        for (key, value) in DEFAULT_CONFIG.items():
+            if key not in vars:
+                vars[key] = value
+                Deveal.__print_warning(
+                    "Missing parameter {} in configuration, using defaullt value \"{}\".".format(key, value)
+                )
 
-##############################################################################
+        return vars
 
+    def run_new(self, args):
+        dest_dir = os.path.join(os.getcwd(), args['path'])
 
-  def __printWarning(self,Msg):
-    print("[WARNING] %s" % Msg)
+        if os.path.exists(dest_dir):
+            Deveal.__print_error("{} already exists.".format(dest_dir))
+            return 1
 
+        print("Creating new slideshow in {}...".format(dest_dir))
+        shutil.copytree(SKELETON_DIR, dest_dir)
+        print("Done")
 
-##############################################################################
+        if "with_reveal" in args and args["with_reveal"]:
+            ret = self.run_reveal(args)
+            if ret == 0:
+                # rewrite config file to used cloned reveal repository
+                yamlfile_path = os.path.join(dest_dir, 'deveal.yaml')
+                with open(yamlfile_path) as yaml_file:
+                    vars = yaml.load(yaml_file, Loader=yaml.FullLoader)
+                vars['reveal_path'] = REVEAL_CLONE_DIR
+                with open(yamlfile_path, 'w') as yaml_file:
+                    yaml.dump(vars, yaml_file)
+            else:
+                return ret
 
+        return 0
 
-  def __buildVars(self):
-    Vars = dict()
+    def run_reveal(self, args):
+        work_path = os.getcwd()
+        if 'path' in args:
+            work_path = args['path']
 
-    if not os.path.isfile("deveal.yaml"):
-      self.__printWarning("File deveal.yaml not found")
-    else:
-      with open(os.path.join(os.getcwd(),"deveal.yaml"), 'r') as YAMLFile:
+        if not os.path.isdir(work_path):
+            Deveal.__print_error("Directory {} not found".format(work_path))
+            return 127
+
         try:
-          Vars = yaml.load(YAMLFile,Loader=yaml.FullLoader)
-        except yaml.YAMLError as E:
-          Mark = E.problem_mark
-          self.__printWarning("Problem reading deveal.yaml file at line %s, column %s. Config file ignored." % (Mark.line+1,Mark.column+1))
+            subprocess.run(["git", "--version"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        except subprocess.SubprocessError:
+            Deveal.__print_error("Git not found")
+            return 127
 
-    for (Key, Value) in DefaultConfig.items():
-      if Key not in Vars:
-        Vars[Key] = Value
-        self.__printWarning("Missing parameter %s in configuration, using defaullt value \"%s\"" % (Key,Value))
+        is_git_workdir = True
+        try:
+            subprocess.run(["git", "status"], cwd=work_path, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        except subprocess.SubprocessError:
+            is_git_workdir = False
 
-    return Vars
+        if is_git_workdir:
+            print("Adding reveal.js as git submodule")
+            try:
+                subprocess.run(
+                    ['git', 'submodule', 'add', 'https://github.com/hakimel/reveal.js.git', REVEAL_CLONE_DIR],
+                    cwd=work_path
+                )
+            except subprocess.SubprocessError:
+                return 127
+        else:
+            print("Cloning reveal.js in subdirectory")
+            try:
+                subprocess.run(
+                    ['git', 'clone', 'https://github.com/hakimel/reveal.js.git', REVEAL_CLONE_DIR],
+                    cwd=work_path
+                )
+            except subprocess.SubprocessError:
+                return 127
 
+        return 0
 
-##############################################################################
+    def run_build(self, args):
+        vars = self.__build_vars()
 
+        try:
+            tpl_filename = "deveal-index.html"
+            generated_content = jinja2.Environment(
+                                    loader=jinja2.FileSystemLoader(os.getcwd())
+                                ).get_template(tpl_filename).render(**vars)
+        except jinja2.TemplateError as e:
+            Deveal.__print_error("Template problem : {} (file {}, line {})".format(e.message, e.filename, e.lineno))
+            return 127
 
-  def runNew(self,Args):
-    DestDir = os.path.join(os.getcwd(),Args['path'])
-    print("Creating new slideshow in %s..." % DestDir)
-    shutil.copytree(SkeletonDir,DestDir)
-    print("Done")
+        outFile = open(os.path.join(os.getcwd(), "index.html"), "w")
+        outFile.write(generated_content)
+        outFile.close()
+        print("Build on {}".format(time.strftime("%Y-%d-%m %H:%M:%S")))
 
-    if "with_reveal" in Args and Args["with_reveal"]:
-      self.runReveal(Args)
-      yamlfile_path = os.path.join(DestDir,'deveal.yaml')
-      with open(yamlfile_path) as yamlfile:
-        vars = yaml.load(yamlfile,Loader=yaml.FullLoader)
+        return 0
 
-      vars['reveal_path'] = RevealCloneDir
+    def on_any_event(self, event):
+        if event.src_path != os.path.join(os.getcwd(), "index.html"):
+            print("{} is {}".format(os.path.relpath(event.src_path), event.event_type))
+            self.run_build(dict())
 
-      with open(yamlfile_path,'w') as yamlfile:
-        yaml.dump(vars, yamlfile)
+    def run_watch(self, args):
+        print("Watching {} ...".format(os.getcwd()))
+        obs = Observer(timeout=0.1)
+        obs.schedule(self, path=os.getcwd(), recursive=True)
+        obs.start()
 
-    return 0
+        try:
+            while True:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            print("")
+            print("Interrupted by keyboard...")
+            obs.stop()
 
+        obs.join()
+        print("Done")
 
-##############################################################################
-
-
-  def runReveal(self,Args):
-    work_path = os.getcwd()
-    if 'path' in Args:
-      work_path = Args['path']
-
-    if not os.path.isdir(work_path):
-      print("Directory {} not found".format(work_path))
-      return 127
-
-    try:
-      P = subprocess.run(["git", "--version"],check=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-    except:
-      print("Git not found")
-      return 127
-
-    is_git_workdir = True
-    try:
-      P = subprocess.run(["git", "status"],cwd=work_path,check=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-    except:
-      is_git_workdir = False
-
-    if is_git_workdir:
-      print("Adding reveal.js as git submodule")
-      try:
-        P = subprocess.run(['git','submodule','add','https://github.com/hakimel/reveal.js.git',RevealCloneDir],cwd=work_path)
-      except:
-        pass
-    else:
-      print("Cloning reveal.js in subdirectory")
-      try:
-        P = subprocess.run(['git','clone','https://github.com/hakimel/reveal.js.git',RevealCloneDir],cwd=work_path)
-      except:
-        pass
-
-    return 0
-
-
-##############################################################################
+        return 0
 
 
-  def runBuild(self,Args):
-    Vars = self.__buildVars()
-
-    try:
-      TplFilename = "deveal-index.html"
-      GeneratedContent = jinja2.Environment(loader=jinja2.FileSystemLoader(os.getcwd())).get_template(TplFilename).render(**Vars)
-    except jinja2.TemplateError as E:
-      self.__printError("Template problem : %s (file %s, line %s)" % (E.message,E.filename,E.lineno))
-      return 127
-
-    OutFile = open(os.path.join(os.getcwd(),"index.html"),"w")
-    OutFile.write(GeneratedContent)
-    OutFile.close()
-
-    print("Build on %s" % time.strftime("%Y-%d-%m %H:%M:%S"))
-
-    return 0
-
-
-##############################################################################
-
-
-  def on_any_event(self, event):
-    if event.src_path != os.path.join(os.getcwd(),"index.html"):
-      print("%s is %s" % (os.path.relpath(event.src_path),event.event_type))
-      self.runBuild(dict())
-
-
-##############################################################################
-
-
-  def runWatch(self,Args):
-    print("Watching %s ..." % os.getcwd())
-    Obs = Observer(timeout=0.1)
-    Obs.schedule(self, path=os.getcwd(), recursive=True)
-    Obs.start()
-
-    try:
-      while True:
-        time.sleep(1)
-    except KeyboardInterrupt:
-      print("")
-      print("Interrupted by keyboard...")
-      Obs.stop()
-
-    Obs.join()
-    print("Done")
-
-    return 0
-
-
-##############################################################################
 ##############################################################################
 
 
 def main():
 
-  Parser = argparse.ArgumentParser(description="Helper tool for creation and management of reveal.js slideshows")
+    parser = argparse.ArgumentParser(
+        description="Helper tool for creation and management of reveal.js slideshows")
 
-  SubParsers = Parser.add_subparsers(dest="command_name")
+    subparsers = parser.add_subparsers(dest="command_name")
 
-  ParserNew = SubParsers.add_parser("new",help="create new reveal.js slideshow")  
-  ParserNew.add_argument("path",type=str)
-  ParserNew.add_argument("--with-reveal",action="store_true",
-                         help="donwloads the reveal repository in a subdirectory (requires git)")
-  ParserBuild = SubParsers.add_parser("build",help="build reveal.js slideshow")
-  ParserWatch = SubParsers.add_parser("watch",help="watch for changes and build reveal.js slideshow")
-  ParserReveal = SubParsers.add_parser("reveal",help="donwload the reveal repository in a subdirectory (requires git)")
-  ParserVersion = SubParsers.add_parser("version",help="show deveal version")
+    parser_new = subparsers.add_parser("new", help="create new reveal.js slideshow")
+    parser_new.add_argument("path", type=str)
+    parser_new.add_argument("--with-reveal", action="store_true",
+                            help="donwloads the reveal repository in a subdirectory (requires git)")
+    subparsers.add_parser("build", help="build reveal.js slideshow")
+    subparsers.add_parser("watch", help="watch for changes and build reveal.js slideshow")
+    subparsers.add_parser("reveal", help="donwload the reveal repository in a subdirectory (requires git)")
+    subparsers.add_parser("version", help="show deveal version")
 
-  Args = vars(Parser.parse_args())
+    cmd_args = vars(parser.parse_args())
 
-  Dvl = Deveal()
+    dvl = Deveal()
 
-  if Args["command_name"] == "new":
-    return Dvl.runNew(Args)
-  elif Args["command_name"] == "reveal":
-    return Dvl.runReveal(Args)
-  elif Args["command_name"] == "build":
-    return Dvl.runBuild(Args)
-  elif Args["command_name"] == "watch":
-    return Dvl.runWatch(Args)
-  elif Args["command_name"] == "version":
-    print(__version__)
+    if cmd_args["command_name"] == "new":
+        return dvl.run_new(cmd_args)
+    elif cmd_args["command_name"] == "reveal":
+        return dvl.run_reveal(cmd_args)
+    elif cmd_args["command_name"] == "build":
+        return dvl.run_build(cmd_args)
+    elif cmd_args["command_name"] == "watch":
+        return dvl.run_watch(cmd_args)
+    elif cmd_args["command_name"] == "version":
+        print(__version__)
