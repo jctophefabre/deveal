@@ -51,12 +51,13 @@
     </div>
 
     <script src="{{ reveal_path }}/dist/reveal.js"></script>
-    <script src="{{ reveal_path }}/plugin/notes/notes.js"></script>
-		<script src="{{ reveal_path }}/plugin/highlight/highlight.js"></script>
+    <script src="{{ reveal_path }}/plugin/highlight/highlight.js"></script>
 
     <script>
 
-      // More info https://revealjs.com/ > Customization > Config Options 
+      // More info about initialization & config:
+			// - https://revealjs.com/initialization/
+			// - https://revealjs.com/config/
       Reveal.initialize({
         controls: true,
         progress: true,
@@ -67,7 +68,8 @@
 
         transition: 'slide', // none/fade/slide/convex/concave/zoom
 
-        plugins: [RevealHighlight, RevealNotes]
+        // Learn about plugins: https://revealjs.com/plugins/
+        plugins: [RevealHighlight]
       });
 
     </script>

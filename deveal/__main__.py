@@ -229,3 +229,5 @@ def main():
         return dvl.run_watch(cmd_args)
     elif cmd_args["command_name"] == "version":
         print(__version__)
+    else:
+        parser.print_help()
